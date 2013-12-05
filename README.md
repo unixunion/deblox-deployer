@@ -1,18 +1,18 @@
-# Deblox.Deployer
+# deblox.Deployer
 
-A simple vertx app which subscribes to module deploy / undeploy events. It will download modules from your configured m2 repository and pass configuration from the message to the module.
+A simple vertx module which subscribes to deploy / undeploy events. It will download modules from your configured m2 repository and pass configuration from the message to the module. see `repos.txt` in the resources directory.
 
 ## Overview
-Upon startup, Deployer subscribes to some queues:
+Upon startup, Deployer uses the configured `address` to seed the following queues which it will subscriber to:
 
 * `address`.deploy
 * `address`.undeploy
 * `address`.audit
 
-And publishes all results to:
+All events are published to the following reporting queue:
 * `address`.reports
 
-If the message containes a reply-address, a response is sent to that address.
+Any message from the bus which containes a reply-address will be sent the result of the command.
 
 ## Building
 deblox.Deployer is built with gradle. see tasks with:
@@ -22,22 +22,37 @@ deblox.Deployer is built with gradle. see tasks with:
 ```
 
 ## Configuration
-Deployer only needs to know the address prefix to subscribe to. Defaults is `deblox.deployer`
+deblox.Deployer only needs to know the prefix or address-space to subscribe to. Default is `deblox.deployer`
 
 ```
 // Example Deployer config file conf.json
 // passed to Deployer via vertx command line flag -conf
 
 {
-  "address": "deblox"
+  "address": "mycluster"
 }
 ```
+
+The resulting subscription endpoints would be:
+
+* mycluster.deploy
+* mycluster.undeploy
+* mycluster.audit
+* mycluster.reports
+
 
 ### Hazelcast
 See Hazelcast's documentation on configuring your cluster. Make sure your cluster.xml is placed within $VERTX_HOME/conf eg: `/opt/vertx-2.0.0-final/conf`
 
-## Deployment Request
-Deployment requests are processed off the `address`.deploy queue. In order to request Deployer to deploy a module from a Maven repository, simply send a message like this:
+### Running
+See the VertX manual on running modules. Normally something down the line of:
+
+```
+vertx runmod com.deblox~deployer~1.0.0-final -cluster -conf conf.json
+```
+
+## Messages
+Deployment requests are processed off the `address`.deploy queue. In order deploy a module from a Maven repository, simply send a message like:
 
 ```
 JsonObject jo = new JsonObject()
@@ -45,33 +60,22 @@ JsonObject jo = new JsonObject()
                     .putString("moduleVersion", "2.1.0-SNAPSHOT")
                     .putString("moduleOwner", "io.vertx")
                     .putObject("moduleConfig", new JsonObject());
+vertx.eventBus().send("deblox.deployer.deploy", jo, myHandler);
 ```
 
-Example dealing with responses:
-
-```
-JsonObject jo = new JsonObject()
-                    .putString("moduleName", "foo")
-                    .putString("moduleVersion", "1.0.0-final")
-                    .putString("moduleOwner", "com.deblox")
-                    .putObject("moduleConfig", new JsonObject());
-
-vertx.eventBus().send("deblox.deployer.deploy", jo, new Handler<Message<JsonObject>>() {
-  @Override
-  public void handle(Message<JsonObject> reply) {
-    assertEquals("ok", reply.body().getString("status"));
-  }
-});
-
-```
 
 All deployment requests are replied to if they were sent instead of published to the queue. All deploy / undeploy results are published to the `address`.reports queue.
 
-## Messages
+### Deployment Requests
 
-### Deployment
+#### Request
+A deployment request must be sent to the `address`.deploy queue. The message MUST contain the following attributes:
 
-#### Request Deploy
+* moduleConfig: {}
+* moduleName: String
+* moduleOwner: String
+* moduleVersion: String
+* xgrade: bool
 
 ```
 {
@@ -84,7 +88,10 @@ All deployment requests are replied to if they were sent instead of published to
     "xgrade": false
 }
 ```
-#### Request Upgrade/Downgrade - xgrade
+
+#### Request Upgrade/Downgrade/Redeploy - xgrade
+`xgrade` tells Deployer to do downgrades / upgrades and redeploys. Deployer's default behavior is to reject deployment requests for any module which is already deployed, regardless of `moduleVersion`
+
 In order to do upgrades or downgrades without specifically asking instances to undeploy specified versions of modules, set `xgrade` to true. This tells the instance to undeploy any version of the module it has deployed and deploy the specified version.
 
 ```
