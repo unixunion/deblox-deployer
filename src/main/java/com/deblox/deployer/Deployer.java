@@ -159,11 +159,7 @@ public class Deployer extends BusModBase {
     } else {
       if (moduleXgrade) {
         logger.info("Undeploying since Xgrade is true!");
-        // Lets undeploy what we have if the versions dont match
-        // if ( deployments.get(moduleOwner + "~" + moduleName).moduleVersion != moduleVersion) {
-        // versions differ, lets undeploy what we have
-        //container.undeployModule( deployments.get(moduleOwner + "~" + moduleName).deploymentID);
-        //doUndeploy(message);
+
         try {
           container.undeployModule( deployments.get(moduleOwner + "~" + moduleName).deploymentID);
         } catch (NullPointerException e) {
@@ -172,9 +168,9 @@ public class Deployer extends BusModBase {
           logger.error("Undeploy error, possibly not deployed");
           e.printStackTrace();
         }
-        // }
 
       }
+
       //System.out.println("Attempting deploy of module " + module );
       container.deployModule(module, moduleConfig, new AsyncResultHandler<String>() { 
         public void handle(AsyncResult<String> asyncResult) {
@@ -184,8 +180,6 @@ public class Deployer extends BusModBase {
 
                 // update the deployments map
                 deployments.put(moduleOwner + "~" + moduleName, deploymentInfoConfig);
-
-                //System.out.println("The module has been deployed, deployment ID is: " + asyncResult.result());
 
                 JsonObject jsonReply = new JsonObject()
                                                     .putString("module", moduleName)
@@ -201,7 +195,6 @@ public class Deployer extends BusModBase {
                 
             } else {
 
-                //System.out.println("The module could not be deployed ");
                 asyncResult.cause().printStackTrace();
 
                 // Notify the reportBus of this catastrophe
@@ -223,8 +216,6 @@ public class Deployer extends BusModBase {
   }
 
   private void doUndeploy(final Message<JsonObject> message) {
-
-    //System.out.println("Got Undeploy Message: " + message.body());
 
     // Get mandatory fields from message
     final String moduleName = getMandatoryString("moduleName", message);
@@ -250,7 +241,6 @@ public class Deployer extends BusModBase {
 
     if ( deployments.containsKey(moduleOwner + "~" + moduleName) ) {
       if ( deployments.get(moduleOwner + "~" + moduleName).moduleVersion.equals(moduleVersion) ) {
-        //System.out.println("Were good to undeploy");
 
         container.undeployModule( deployments.get(moduleOwner + "~" + moduleName).deploymentID, new AsyncResultHandler<Void>() {        
         
@@ -270,7 +260,7 @@ public class Deployer extends BusModBase {
         });
 
       } else {
-        //System.out.println("Version missmatch, ignoring undeply request!");  
+  
         eb.publish(reportAddress, new JsonObject()
                                         .putString("action", "undeploy")
                                         .putString("module", module)
