@@ -1,0 +1,14 @@
+{
+
+  // Java verticle
+  "main":"com.deblox.deployer.Deployer",
+
+  "description":"Simple module deployer",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Kegan Holtzhausen",
+
+  "developers": ["Kegan Holtzhausen"],
+  "keywords": ["deploy", "deployment", "module"],
+  "homepage": "https://github.com/unixunion/deblox-deployer"
+
+}
