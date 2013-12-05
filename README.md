@@ -1,6 +1,6 @@
 # deblox.Deployer
 
-A simple vertx module which subscribes to deploy / undeploy events. It will download modules from your configured m2 repository and pass configuration from the message to the module. see `repos.txt` in the resources directory.
+A simple vertx module which subscribes to deploy / undeploy events. It will download modules from your configured m2 repository and pass configuration from the message to the module. 
 
 ## Overview
 Upon startup, Deployer uses the configured `address` to seed the following queues which it will subscriber to:
@@ -40,6 +40,7 @@ The resulting subscription endpoints would be:
 * mycluster.audit
 * mycluster.reports
 
+Deployer uses vertx's default module searche mechanism, which searches maven repos for modules. see `repos.txt` in the resources directory.
 
 ### Hazelcast
 See Hazelcast's documentation on configuring your cluster. Make sure your cluster.xml is placed within $VERTX_HOME/conf eg: `/opt/vertx-2.0.0-final/conf`
