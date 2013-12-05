@@ -1,6 +1,6 @@
 # Deblox.Deployer
 
-A simple vertx app which subscribes to module deploy / undeploy events. It will download modules from your configure m2 repository and pass configuration from the message to the module.
+A simple vertx app which subscribes to module deploy / undeploy events. It will download modules from your configured m2 repository and pass configuration from the message to the module.
 
 ## Overview
 Upon startup, Deployer subscribes to some queues:
@@ -13,6 +13,13 @@ And publishes all results to:
 * `address`.reports
 
 If the message containes a reply-address, a response is sent to that address.
+
+## Building
+deblox.Deployer is built with gradle. see tasks with:
+
+```
+./gradlew tasks
+```
 
 ## Configuration
 Deployer only needs to know the address prefix to subscribe to. Defaults is `deblox.deployer`
