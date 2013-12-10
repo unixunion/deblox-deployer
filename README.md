@@ -25,6 +25,10 @@ All events are published to the following reporting queue:
 
 Any message from the bus which containes a reply-address will be sent the result of the command.
 
+## Blueprint
+
+![Blueprint](https://raw.github.com/unixunion/deblox-deployer/master/deployer-schematic.png)
+
 ## Building
 deblox.Deployer is built with gradle. see tasks with:
 
