@@ -2,7 +2,18 @@
 
 A simple vertx module which subscribes to deploy / undeploy events. It will download modules from your configured m2 repository and pass configuration from the message to the module. 
 
+## Features
+
+* Encrypted cluster communication
+* Segementable clusters on name / passcode e.g: dev / prod
+* Clusterwide deployment of modules
+* Clusterwide and node auditing of modules
+* Reporting of deployment events to EventBus
+
 ## Overview
+
+Deployer is supposed to be a very simple module deployment mechanism for Vertx modules, The idea is to use deployer to roll out your more complex modules like cattle, and cull them like cattle if need be. All modules should be designed with that in mind! 
+
 Upon startup, Deployer uses the configured `address` to seed the following queues which it will subscriber to:
 
 * `address`.deploy
