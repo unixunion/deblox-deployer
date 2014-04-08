@@ -1,5 +1,13 @@
 package com.deblox.deployer.test.integration.examples;
 
+/*
+
+    If you start a deblox-deployer instance via `vertx runzip build/libs/deployer-1.0.0-final.zip -cluster`
+    you can run this with `vertx run Simpledeploy.java -cluster` against it to issue undeploy and deploy events
+    and read the results posted to the reports endpoint.
+
+ */
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
