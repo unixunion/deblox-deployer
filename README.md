@@ -22,7 +22,7 @@ Upon startup, Deployer uses the configured `address` to seed the following queue
 All events are published to the following reporting queue:
 * deblox.reports
 
-Any message from the bus which containes a reply-address will be sent the result of the command.
+Also note that ALL messages which contain a reply-address will be sent the result of the command. This does NOT occur for 'publish' events, only 'sent' events.
 
 ## Blueprint
 
