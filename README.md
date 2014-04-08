@@ -31,6 +31,7 @@ Any message from the bus which containes a reply-address will be sent the result
 ## Dependancies
 * Vertx.IO 2.1RC3
 * VERTX_HOME set to where you unzipped vertx.io eg: /opt/vertx
+* you probably want to add VERTX_HOME/bin to your system PATH also.
 
 You will want to add the VERTX_HOME/libs path to your project classpath in IntelliJ or similar.
 
