@@ -4,7 +4,6 @@ A simple vertx module which subscribes to deploy / undeploy events. It will down
 
 ## Features
 
-* Encrypted cluster communication
 * Segementable clusters on name / passcode e.g: dev / prod
 * Clusterwide deployment of modules
 * Clusterwide and node auditing of modules
@@ -29,12 +28,69 @@ Any message from the bus which containes a reply-address will be sent the result
 
 ![Blueprint](https://raw.github.com/unixunion/deblox-deployer/master/deployer-schematic.png)
 
+## Dependancies
+* Vertx.IO 2.1RC3
+* VERTX_HOME set to where you unzipped vertx.io eg: /opt/vertx
+
 ## Building
-deblox.Deployer is built with gradle. see tasks with:
+deblox.Deployer is built with gradle. see gradlew tasks
 
 ```
-./gradlew tasks
+./gradlew build
 ```
+
+## Testing
+Tests the deploy / undeploy and audit methods.
+
+```
+./gradlew test
+```
+
+If you have issues downloading dependencies like mod-auth-mgr, check your resources/repos.txt or VERTX_HOME/conf/repos.txt
+
+You can run a simple script against the clustered message queue `vertx run src/test/java/com/deblox/deployer/test/integration/examples/Simpledeploy.java -cluster`
+
+## Running a small Cluster
+* copy resources/cluster.xml to VERTX_HOME/conf
+* copy resources/logging.properties to VERTX_HOME/conf
+
+Choose one of the methods below and run in two or more terminal windows.
+
+runZip
+
+```
+vertx runzip build/libs/deployer-1.0.0-final.zip -cluster
+```
+
+runMod
+
+```
+vertx runmod com.deblox~deployer~1.0.0-final -cluster -conf conf.json
+```
+
+The result should be something like this
+
+```
+keghol #> vertx runzip build/libs/deployer-1.0.0-final.zip -cluster
+Starting clustering... 
+[127.0.0.1]:5701 [dev] 
+
+Members [2] {
+	Member [127.0.0.1]:5703
+	Member [127.0.0.1]:5701 this
+}
+ 
+[127.0.0.1]:5701 [dev] Address[127.0.0.1]:5701 is STARTED 
+Succeeded in deploying module from zip 
+
+```
+
+
+## Clustering
+All clustering is done on the loopback interfaces if you use the config from src/main/resources. Make sure cluster.xml is in the VERTX_HOME/conf directory!
+
+## Logging
+VertX uses JUL, so place the resources/logging.properties file in VERTX_HOME/conf.
 
 ## Configuration
 deblox.Deployer only needs to know the prefix or address-space to subscribe to. Default is `deblox.deployer`
@@ -57,17 +113,7 @@ The resulting subscription endpoints would be:
 
 Deployer uses vertx's default module searche mechanism, which searches maven repos for modules. see `repos.txt` in the resources directory.
 
-### Hazelcast
-See Hazelcast's documentation on configuring your cluster. Make sure your cluster.xml is placed within $VERTX_HOME/conf eg: `/opt/vertx-2.0.0-final/conf`
-
-### Running
-See the VertX manual on running modules. Normally something down the line of:
-
-```
-vertx runmod com.deblox~deployer~1.0.0-final -cluster -conf conf.json
-```
-
-## Messages
+## Messaging API
 Deployment requests are processed off the `address`.deploy queue. In order deploy a module from a Maven repository, simply send a message like:
 
 ```
@@ -79,8 +125,9 @@ JsonObject jo = new JsonObject()
 vertx.eventBus().send("deblox.deployer.deploy", jo, myHandler);
 ```
 
+Deployment requests can be 'sent' in which case ONLY one node will get that message and process it, or they can be 'published' to the entire cluster in which case ALL nodes will act on the message.
 
-All deployment requests are replied to if they were sent instead of published to the queue. All deploy / undeploy results are published to the `address`.reports queue.
+Nodes report event results back to the reports queue.
 
 ### Deployment Requests
 

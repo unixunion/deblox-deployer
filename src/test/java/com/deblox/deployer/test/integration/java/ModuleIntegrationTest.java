@@ -133,7 +133,7 @@ public class ModuleIntegrationTest extends TestVerticle {
 
     JsonObject jo = new JsonObject()
                         .putString("moduleName", "mod-auth-mgr")
-                        .putString("moduleVersion", "2.1.0-SNAPSHOT")
+                        .putString("moduleVersion", "2.0.0-final")
                         .putString("moduleOwner", "io.vertx")
                         .putObject("moduleConfig", new JsonObject().putString("someconfig", "someval"));
 
@@ -153,7 +153,7 @@ public class ModuleIntegrationTest extends TestVerticle {
 
     final JsonObject jo = new JsonObject()
                         .putString("moduleName", "mod-auth-mgr")
-                        .putString("moduleVersion", "2.1.0-SNAPSHOT")
+                        .putString("moduleVersion", "2.0.0-final")
                         .putString("moduleOwner", "io.vertx")
                         .putObject("moduleConfig", new JsonObject().putString("someconfig", "someval"));
 

@@ -190,7 +190,7 @@ public class Deployer extends BusModBase {
                                                         .putString("deploymentID" ,asyncResult.result())
                                                         .putObject("config", moduleConfig));
                 eb.publish(reportAddress, jsonReply);
-                
+                logger.info("deployed " + moduleName);
                 sendOK(message, new JsonObject().putString("message", asyncResult.result()));
                 
             } else {
@@ -205,7 +205,7 @@ public class Deployer extends BusModBase {
                                     .putBoolean("xgrade", moduleXgrade)
                                     .putString("detail", asyncResult.cause().toString());
                 eb.publish(reportAddress, jsonReply);
-
+                logger.error("error deploying " + moduleName);
                 // Use BusMod sendError to notify the sender
                 sendError(message, asyncResult.cause().toString());
             }
@@ -253,6 +253,7 @@ public class Deployer extends BusModBase {
                                           .putString("detail", "Undeployed " + module));
 
             deployments.remove(moduleOwner + "~" + moduleName);
+            logger.info("undeployed " + moduleName);
             sendOK(message);
           }
         }
@@ -266,6 +267,7 @@ public class Deployer extends BusModBase {
                                         .putString("module", module)
                                         .putString("status", "error")
                                         .putString("detail", "A different version is currently deployed"));
+        logger.error("version missmatch in undeploy request, refusing");
         sendError(message, "version mismatch");    
       }
 
@@ -275,6 +277,7 @@ public class Deployer extends BusModBase {
                                         .putString("module", module)
                                         .putString("status", "error")
                                         .putString("detail", "no such module: " + module + " deployed in this container"));
+      logger.error("no such module to undeploy");
       sendError(message, "no such module: " + module + " deployed in this container");
     }}
 
