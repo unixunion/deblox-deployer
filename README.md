@@ -13,14 +13,14 @@ A simple vertx module which subscribes to deploy / undeploy events. It will down
 
 Deployer is supposed to be a very simple module deployment mechanism for Vertx modules, The idea is to use deployer to roll out your more complex modules like cattle, and cull them like cattle if need be. All modules should be designed with that in mind! 
 
-Upon startup, Deployer uses the configured `address` to seed the following queues which it will subscriber to:
+Upon startup, Deployer uses the configured `address` to seed the following queues which it will subscriber to, defaults are:
 
-* `address`.deploy
-* `address`.undeploy
-* `address`.audit
+* deblox.deploy
+* deblox.undeploy
+* deblox.audit
 
 All events are published to the following reporting queue:
-* `address`.reports
+* deblox.reports
 
 Any message from the bus which containes a reply-address will be sent the result of the command.
 
@@ -31,6 +31,9 @@ Any message from the bus which containes a reply-address will be sent the result
 ## Dependancies
 * Vertx.IO 2.1RC3
 * VERTX_HOME set to where you unzipped vertx.io eg: /opt/vertx
+
+You will want to add the VERTX_HOME/libs path to your project classpath in IntelliJ or similar.
+
 
 ## Building
 deblox.Deployer is built with gradle. see gradlew tasks
@@ -62,7 +65,7 @@ runZip
 vertx runzip build/libs/deployer-1.0.0-final.zip -cluster
 ```
 
-runMod
+runMod can be used if you installed the package to your local ~/.m2 repo
 
 ```
 vertx runmod com.deblox~deployer~1.0.0-final -cluster -conf conf.json
@@ -93,7 +96,7 @@ All clustering is done on the loopback interfaces if you use the config from src
 VertX uses JUL, so place the resources/logging.properties file in VERTX_HOME/conf.
 
 ## Configuration
-deblox.Deployer only needs to know the prefix or address-space to subscribe to. Default is `deblox.deployer`
+deblox.Deployer only needs to know the prefix or address-space to subscribe to. Default is `deblox`
 
 ```
 // Example Deployer config file conf.json
@@ -111,12 +114,13 @@ The resulting subscription endpoints would be:
 * mycluster.audit
 * mycluster.reports
 
-Deployer uses vertx's default module searche mechanism, which searches maven repos for modules. see `repos.txt` in the resources directory.
+Deployer uses vertx's default module search mechanisms, which search maven and maven like repos for modules. see `repos.txt` in the resources directory.
 
 ## Messaging API
-Deployment requests are processed off the `address`.deploy queue. In order deploy a module from a Maven repository, simply send a message like:
+Requests are processed off the various deblox.* queues. Messages are in JSON format. example:
 
 ```
+// JAVA
 JsonObject jo = new JsonObject()
                     .putString("moduleName", "mod-auth-mgr")
                     .putString("moduleVersion", "2.1.0-SNAPSHOT")
@@ -125,20 +129,22 @@ JsonObject jo = new JsonObject()
 vertx.eventBus().send("deblox.deployer.deploy", jo, myHandler);
 ```
 
-Deployment requests can be 'sent' in which case ONLY one node will get that message and process it, or they can be 'published' to the entire cluster in which case ALL nodes will act on the message.
+Requests can be 'sent' in which case ONLY one node in the cluster will process that message, OR they can be 'published' to the entire cluster in which case ALL nodes will recieve the message.
 
-Nodes report event results back to the reports queue.
+All nodes report any event results back to the reports queue regardless if they are sent/published.
 
 ### Deployment Requests
 
 #### Request
-A deployment request must be sent to the `address`.deploy queue. The message MUST contain the following attributes:
+A deployment request must be sent to the deblox.deploy queue. The message MUST contain the following attributes:
 
 * moduleConfig: {}
 * moduleName: String
 * moduleOwner: String
 * moduleVersion: String
 * xgrade: bool
+
+Example:
 
 ```
 {
@@ -152,10 +158,10 @@ A deployment request must be sent to the `address`.deploy queue. The message MUS
 }
 ```
 
-#### Request Upgrade/Downgrade/Redeploy - xgrade
-`xgrade` tells Deployer to do downgrades / upgrades and redeploys. Deployer's default behavior is to reject deployment requests for any module which is already deployed, regardless of `moduleVersion`
+#### Crossgrade to Request Upgrade/Downgrade/Redeploy/Undeploy skipping version checks
+*xgrade* tells Deployer to do downgrades / upgrades and redeploys. Deployer's default behavior is to reject deployment requests for any module which is already deployed, regardless of `moduleVersion`
 
-In order to do upgrades or downgrades without specifically asking instances to undeploy specified versions of modules, set `xgrade` to true. This tells the instance to undeploy any version of the module it has deployed and deploy the specified version.
+In order to do upgrades or downgrades without specifically asking instances to undeploy specified versions of modules, set *xgrade* to true. This tells the instance to undeploy any version of the module it has deployed and deploy the specified version.
 
 ```
 {
@@ -240,7 +246,7 @@ In order to do upgrades or downgrades without specifically asking instances to u
 ```
 
 ### Undeploy
-Undeploy messages are sent to `address`.undeploy and look identical to deploy messages, though the moduleConfig node can be skipped since it is ignored.
+Undeploy messages are sent to deblox.undeploy and look identical to deploy messages, though the moduleConfig node can be skipped since it is ignored.
 
 #### Request
 ```
@@ -288,6 +294,7 @@ Undeploy messages are sent to `address`.undeploy and look identical to deploy me
 
 ### Audit
 Audit triggers the container to report on its deployed modules back to the requestor and publish to the reporting bus.
+
 #### Request
 ```
 {

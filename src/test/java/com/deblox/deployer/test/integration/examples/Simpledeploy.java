@@ -25,13 +25,14 @@ public class Simpledeploy extends Verticle {
         vertx.eventBus().registerHandler("deblox.deployer.reports", myHandler);
 
 
-
+        // after 100ms issue a undeploy event
         long timerID1 = vertx.setTimer(100, new Handler<Long>() {
             public void handle(Long timerID) {
                 undeploy();
             }
         });
 
+        // after 1000ms issue a deploy event
         long timerID2 = vertx.setTimer(1000, new Handler<Long>() {
             public void handle(Long timerID) {
                 deploy();
