@@ -8,12 +8,7 @@ import org.vertx.java.platform.Verticle;
 public class Simpledeploy extends Verticle {
 
 	public void start() {
-//        long timerID = vertx.setPeriodic(1000, new Handler<Long>() {
-//            public void handle(Long timerID) {
-//                System.out.println("Deploying");
-//                deploy();
-//            }
-//        });
+
 
         // Setup a handler to receive reports from
         Handler<Message<JsonObject>> myHandler = new Handler<Message<JsonObject>>() {
@@ -21,7 +16,6 @@ public class Simpledeploy extends Verticle {
                 System.out.println("Report received: " + message.body());
             }
         };
-
         vertx.eventBus().registerHandler("deblox.deployer.reports", myHandler);
 
 
@@ -38,7 +32,6 @@ public class Simpledeploy extends Verticle {
                 deploy();
             }
         });
-
 
 	}
 
@@ -61,10 +54,3 @@ public class Simpledeploy extends Verticle {
         vertx.eventBus().publish("deblox.deployer.deploy", jo);
     }
 }
-
-//vertx.eventBus().send("deblox.deployer.deploy", jo, new Handler<Message<JsonObject>>() {
-//@Override
-//public void handle(Message<JsonObject> reply) {
-//        System.out.println("Response: " + reply.body());
-//        }
-//        });
